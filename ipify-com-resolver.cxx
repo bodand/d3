@@ -82,10 +82,7 @@ d3::ipify_com_resolver::resolve_into(std::span<char> resolved) {
 	if (ipv6()) load_ip_at(curl, ipv6_url.data(), &buf);
 }
 
-#include <iostream>
-
 d3::ipify_com_resolver::~ipify_com_resolver() noexcept {
-	std::cerr << "LOGGING\n";
 	curl_easy_cleanup(static_cast<CURL*>(_impl_ctx));
 }
 

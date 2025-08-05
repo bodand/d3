@@ -171,7 +171,7 @@ main(int argc, char** argv) {
 	d3::resolver* resolver = nullptr;
 	try {	
 		resolver_it->maker(std::span(buf), cfg.ipv4(), cfg.ipv6());
-		resolver = std::bit_cast<d3::resolver*>(&(buf[0]));
+		resolver = std::launder(std::bit_cast<d3::resolver*>(&(buf[0])));
 
 		resolver->resolve(resolv_buffer);
 		resolver->~resolver();
