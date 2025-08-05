@@ -1,0 +1,59 @@
+= d3 (dynamic dns daemon)
+
+d3 is a set of executables written in C++ that provide easily usable utilities
+to manage self-hosted services that are stuck behind the ISP's dynamic DNS
+whims.
+
+The d3 executables are designed to be used primarily with
+https://smarden.org/runit/[runit] or https://skarnet.org/software/s6/[s6] style
+service supervisers with https://github.com/leahneukirchen/snooze[snooze], but
+I'm sure you can shoehorn it into systemd and/or cron as well.
+
+== Provided tools
+
+The executables are designed to be reusable across different IP resolvers and
+DNS providers, although as of right now, only one of each is implemented. (The
+ones I use.)
+
+From this you can gleam that the two category of tools provided are resolvers and DNS providers.
+The job of the former is to figure out what the current IP address of the machine/system is.
+The latter has two subcategories: the lookup tools and updaters.
+The lookup tools are mostly an easier to handle version of nslookup/dig that is intended to be used with other tools of the d3 suite.
+
+Each of the tools have their own documentation:
+
+xref:docs/d3-resolve[d3-resolve]::
+	Resolve the current IP address and pass it over to a process on STDIN.
+
+== Dependencies
+
+The following depdendencies are used by d3:
+
+- libcurl
+
+You will need to provide the required development libraries and headers for these libraries.
+
+== COPYING
+
+Copyright (c) 2025 {authors} +
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

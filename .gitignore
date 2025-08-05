@@ -5,6 +5,11 @@ d3-update
 
 # Made config
 config.mk
+depend.mk
+
+# clangd stuffs
+.cache
+compile_commands.json
 
 # Object files
 *.o
