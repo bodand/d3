@@ -1,0 +1,14 @@
+# Binaries
+d3-resolve
+d3-lookup
+d3-update
+
+# Made config
+config.mk
+
+# Object files
+*.o
+
+# Backups
+*.bak
+
