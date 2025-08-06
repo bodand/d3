@@ -25,16 +25,15 @@
 #include <bit>
 #include <cstddef>
 #include <cstring>
-#include <cstring>
 #include <exception>
-#include <exception>
+#include <print>
 #include <iostream>
 #include <ostream>
-#include <string>
 
 #include <unistd.h>
 
 #include "ipify-com-resolver.hxx"
+#include "xerr.hxx" 
 
 struct config_bundle {
 	bool
@@ -112,7 +111,7 @@ read_config(int& argc, char**& argv) {
 }
 
 int 
-print_version(char* progname) {
+print_version() {
 	std::cout << "v0.1.0"; // XXX configure generate this
 	return 2;
 }
@@ -129,17 +128,15 @@ namespace {
 	struct resolver_map {
 		std::string_view name;
 		void (*maker)(std::span<std::byte> buf, bool ipv4, bool ipv6);
-		void (*deleter)(std::span<std::byte> buf) noexcept;
 	};
 
 	constexpr const auto resolver_mapping = std::array{
-		resolver_map{
-			.name = "ipify", 
-			.maker = &d3::ipify_com_resolver::maker,
-			.deleter = &d3::ipify_com_resolver::deleter,
-		}
+		resolver_map{"ipify", d3::ipify_com_resolver::maker}
 	};
 }
+
+using d3::xerr;
+using d3::xerrx;
 
 int
 main(int argc, char** argv) {
@@ -151,17 +148,15 @@ main(int argc, char** argv) {
 	const config_bundle cfg = read_config(argc, argv);
 
 	if (cfg.help()) return print_usage(progname);
-	if (cfg.version()) return print_version(progname);
+	if (cfg.version()) return print_version();
 
 	const auto resolver_it = std::find_if(resolver_mapping.cbegin(),
 		resolver_mapping.cend(),
 		[&cfg](const auto& mapping) {
 			return cfg.backend() == mapping.name;
 		});
-	if (resolver_it == resolver_mapping.cend()) {
-		std::cerr << "error: invalid resolver backend set: " << cfg.backend() << "\n";
-		return 2;
-	}
+	if (resolver_it == resolver_mapping.cend())
+		return xerrx(2, "invalid resolver backend: {}", cfg.backend());
 
 	char resolv_buffer[256]{0};
 
@@ -188,30 +183,21 @@ main(int argc, char** argv) {
 	}
 
 	int pfd[2];
-	if (pipe(pfd) < 0) { 
-		std::cerr << "error: pipe: " << strerror(errno) << "\n";
-		return 1;
-	}
+	if (pipe(pfd) < 0) 
+		return xerr(1, "pipe");
 	int pipe_read = pfd[0];
 	int pipe_write = pfd[1];
 
-	if (dup2(pipe_read, STDIN_FILENO) < 0) {
-		std::cerr << "error: dup2: " << strerror(errno) << "\n";
-		return 1;
-	}
+	if (dup2(pipe_read, STDIN_FILENO) < 0)
+		return xerr(1, "dup2");
 
-	if (write(pipe_write, resolv_buffer, std::strlen(resolv_buffer)) < 0) {
-		std::cerr << "error: write: " << strerror(errno) << "\n";
-		return 1;
-	}
-	if (close(pipe_write) < 0) {
-		std::cerr << "error: close: " << strerror(errno) << "\n";
-		return 1;
-	}
+	if (write(pipe_write, resolv_buffer, std::strlen(resolv_buffer)) < 0)
+		return xerr(1, "write");
+	if (close(pipe_write) < 0) 
+		return xerr(1, "close");
 
 	char* exe = argv[0];
 	execvp(exe, argv);
-	std::cerr << "error: execvp: " << strerror(errno) << "\n";
-	return 1;
+	return xerr(1, "execvp");
 }
 

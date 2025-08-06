@@ -30,7 +30,7 @@
 .SUFFIXES:
 .SUFFIXES: .cxx .o
 
-PROGRAMS = d3-resolve
+PROGRAMS = d3-resolve d3-query
 CC_FLAGS = -std=c++26 ${CFG_LIBCURL_CFLAGS}
 LINK_FLAGS = ${CFG_LIBCURL_LIBS}
 
@@ -44,7 +44,7 @@ config.mk: configure.pl
 	./configure.pl 
 
 include depend.mk
-depend.mk: Makefile ${RESOLVE_SRC}
+depend.mk: Makefile ${RESOLVE_SRC} ${QUERY_SRC}
 	touch $@
 	gccmakedep -f $@ -- ${EFFECTIVE_CC_FLAGS} -- ${RESOLVE_SRC}
 
@@ -55,6 +55,16 @@ RESOLVE_OBJ = ${RESOLVE_SRC:.cxx=.o}
 d3-resolve: ${RESOLVE_OBJ}
 	${CXX} -o $@ ${RESOLVE_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
+QUERY_SRC = d3-query.cxx
+QUERY_OBJ = ${QUERY_SRC:.cxx=.o}
+d3-query: ${QUERY_OBJ}
+	${CXX} -o $@ ${QUERY_OBJ} ${EFFECTIVE_LINK_FLAGS}
+
 .cxx.o:
 	${CXX} -c ${EFFECTIVE_CC_FLAGS} -o $@ $<
+
+clean:
+	-rm *.o
+	-rm ${PROGRAMS}
+
 

@@ -1,0 +1,136 @@
+= d3-query(1)
+András Bodor <bodand@proton.me>
+v0.1.0
+:doctype: manpage
+
+== NAME
+
+d3-query - Query DNS A/AAAA records
+
+== SYNOPSIS
+
+*d3-resolve* [-46dhv] _exec..._
+
+== OPTIONS
+
+*-4*::
+Query the IPv4 address, that is an A record. (On by default if nothing present.)
+
+*-6*::
+Query the IPv6 address, that is an AAAA record. (Off by default if nothing present.)
+
+*-d* _domain_::
+The domain to look up.
+Uses hostname if not defined, and can be set multiple times.
+
+*-h*::
+Print help information and exit.
+
+*-v*::
+Print version information and exit.
+
+
+== ARGUMENTS
+
+_exec..._:: 
+The executable program and arguments that the current process is to exec into.
+The _exec_ process will have the resolved IP addresses line-by-line available
+on their STDIN.  If not given, resolved addresses are printed on the current
+process's STDOUT and *d3-query* exits with 2.
+
+== DESCRIPTION
+
+The *d3-query* process performs A or AAAA DNS record lookups and prints the
+results to the given _exec..._ process's STDIN, or if not given, to STDOUT.
+
+All input found on STDIN will be forwarded to where the output is going: either
+the <<exec(2)>>ed process's STDIN, or STDOUT. This happens at process startup,
+so further input will not be forwarded.
+
+After this, the domains set in *-d* are looked up.
+If no domain is given, the current host's hostname is used.
+Each queried domain will be printed in the following format for each found IP address in a new line. If a address could not be resolved, a single question mark (`?`) is printed instead of an IP.
+
+  <domain-name>\t<ip>
+
+== EXIT CODES
+
+*1*:: Could not reach the given IP resolver.
+Additional information, if available, is printed to STDERR.
+
+*2*:: Incorrect usage.
+Additional information may be available on STDERR.
+
+*3*:: Could not execute into present exec parameters.
+Error message from the system is available on STDERR.
+
+== EXAMPLES
+
+Successfull, simple query::
+
+  $ d3-query -d my.example.com
+  my.example.com 1.2.3.4
+
+IPv6 query::
+Note that IPv6 formatting is unspecified.
+
+  $ d3-query -6d my.example.com
+  my.example.com abcd::ef01:2345
+
+Multiple queries::
+
+  $ d3-query -d my.example.com -d my2.example.com
+  my.example.com 1.2.3.4
+  my2.example.com 1.2.3.5
+  my2.example.com 1.2.3.6
+
+Failed query::
+
+  $ d3-query -d my.example.com -d my2.example.com -d my3.example.com
+  my.example.com 1.2.3.4
+  my2.example.com 1.2.3.5
+  my2.example.com 1.2.3.6
+  my3.example.com ?
+
+Input forwarding::
+
+  $ echo "9.8.7.6" | d3-query -d my.example.com
+  9.8.7.6
+  my.example.com 1.2.3.4
+
+
+== SEE ALSO
+
+*d3-filter(1)*::
+Perform filtering on an input stream of IP addresses and domain names.
+
+*d3-resolve(1)*::
+Update a given DNS record at the provided DNS provider.
+
+*d3-update(1)*::
+Update a given DNS record at the provided DNS provider.
+
+== COPYING 
+
+Copyright (c) 2025 {authors} +
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
