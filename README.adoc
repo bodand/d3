@@ -4,6 +4,8 @@ d3 is a set of executables written in C++ that provide easily usable utilities
 to manage self-hosted services that are stuck behind the ISP's dynamic DNS
 whims.
 
+Note, that d3 is not actually a daemon.
+
 The d3 executables are designed to be used primarily with
 https://smarden.org/runit/[runit] or https://skarnet.org/software/s6/[s6] style
 service supervisers with https://github.com/leahneukirchen/snooze[snooze], but
@@ -25,6 +27,12 @@ Each of the tools have their own documentation:
 xref:docs/d3-resolve[d3-resolve]::
 	Resolve the current IP address and pass it over to a process on STDIN.
 
+xref:docs/d3-query[d3-query]::
+   Query A and AAAA DNS records.
+
+xref:docs/d3-filter[d3-filter]::
+   Filter input lines based on record types and grouped domains.
+
 == Dependencies
 
 The following depdendencies are used by d3:
@@ -35,7 +43,8 @@ You will need to provide the required development libraries and headers for thes
 
 == COPYING
 
-Copyright (c) 2025 {authors} +
+Copyright (c) 2025 {authors}
+
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
 
