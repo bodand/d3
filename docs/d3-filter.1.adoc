@@ -130,7 +130,9 @@ To get proper *d3* style input run `s/ /\t/g` on each input block.
 
 .Simple A record filtering
 =====
-In the following, since ex1.example.com contains a record with the record type A and value set in the filter (`1.2.3.4`), only ex2.example.com is printed with the failed filter's value.
+In the following, since ex1.example.com contains a record with the record type
+A and value set in the filter (`1.2.3.4`), only ex2.example.com is printed with
+the failed filter's value.
 
    A 1.2.3.4
    ex1.example.com A 1.2.3.4
@@ -144,8 +146,10 @@ In the following, since ex1.example.com contains a record with the record type A
 
 .Multi record type filtering
 =====
-If multiple record types are filtered, only the matching subset is considered for filtering a given domain's group.
-That is, even if the AAAA record does not match ex2.example.com, because it only contains an A record, it is only filtered on the A value.
+If multiple record types are filtered, only the matching subset is considered
+for filtering a given domain's group.  Even if the A records of ex2.example.com
+match the filter set for A, the AAAA records fail (there is none of them to
+contain the wanted filter) so the AAAA record is printed.
 
    A 1.2.3.4
    AAAA fedc:ba00::1234
@@ -154,13 +158,18 @@ That is, even if the AAAA record does not match ex2.example.com, because it only
    ex2.example.com A 1.2.3.4
    $ d3-filter
    ex1.example.com AAAA fedc:ba00::1234
+   ex2.example.com AAAA fedc:ba00::1234
 
 =====
 
 == SEE ALSO
 
-*d3-lookup(1)*::
-Look up currently configured IP address for and address.
+*d3-resolve(1)*::
+Look up the running matchine's public IP address.
+
+*d3-query(1)*::
+Query DNS A and AAAA records.  If piping through the result of *d3-resolve* the
+full output coincidentally matches the input of *d3-filter*...
 
 *d3-update(1)*::
 Update a given DNS record at the provided DNS provider.
