@@ -26,8 +26,8 @@ bool
 d3::resolver::large_enough_for_resolve(std::size_t buf_sz) {
 	size_t needed = 0;
 	// NUL included for \n which is added when generating
-	if (_ipv4) needed += sizeof("255.255.255.255"); 
-	if (_ipv6) needed += sizeof("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF");
+	if (_ipv4) needed += sizeof("A\t255.255.255.255"); 
+	if (_ipv6) needed += sizeof("AAAA\tFFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF");
 	return buf_sz >= needed;
 }
 

@@ -26,11 +26,11 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-.PHONY: clean all build distclean configure
+.PHONY: clean all build distclean configure compile_db
 .SUFFIXES:
 .SUFFIXES: .cxx .o
 
-PROGRAMS = d3-resolve d3-query
+PROGRAMS = d3-resolve d3-query d3-filter
 CC_FLAGS = -std=c++26 ${CFG_LIBCURL_CFLAGS}
 LINK_FLAGS = ${CFG_LIBCURL_LIBS}
 
@@ -42,11 +42,6 @@ all: build
 include config.mk
 config.mk: configure.pl
 	./configure.pl 
-
-include depend.mk
-depend.mk: Makefile ${RESOLVE_SRC} ${QUERY_SRC}
-	touch $@
-	gccmakedep -f $@ -- ${EFFECTIVE_CC_FLAGS} -- ${RESOLVE_SRC}
 
 build: ${PROGRAMS}
 
@@ -60,11 +55,29 @@ QUERY_OBJ = ${QUERY_SRC:.cxx=.o}
 d3-query: ${QUERY_OBJ}
 	${CXX} -o $@ ${QUERY_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
+FILTER_SRC = d3-filter.cxx
+FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
+d3-filter: ${FILTER_OBJ}
+	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
+
 .cxx.o:
 	${CXX} -c ${EFFECTIVE_CC_FLAGS} -o $@ $<
 
 clean:
-	-rm *.o
+	-rm *.o *.bak
 	-rm ${PROGRAMS}
 
+distclean: clean
+	-rm config.mk
+	-rm depend.mk
+
+compile_db: compile_commands.json
+
+compile_commands.json: Makefile depend.mk config.mk
+	bear -- ${MAKE}
+
+include depend.mk
+depend.mk: Makefile ${RESOLVE_SRC} ${QUERY_SRC} ${FILTER_SRC}
+	touch $@
+	gccmakedep -f $@ -- ${EFFECTIVE_CC_FLAGS} -- ${RESOLVE_SRC}
 

@@ -1,7 +1,6 @@
 # Binaries
-d3-resolve
-d3-lookup
-d3-update
+d3-*
+!d3-*.cxx
 
 # Made config
 config.mk

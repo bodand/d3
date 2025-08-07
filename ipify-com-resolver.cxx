@@ -37,9 +37,12 @@ d3::ipify_com_resolver::ipify_com_resolver(bool ipv4, bool ipv6)
 
 namespace {
 	constexpr std::string_view ipv4_url = "https://api4.ipify.org";
+	constexpr std::string_view ipv4_marker = "A\t";
 	constexpr std::string_view ipv6_url = "https://api6.ipify.org";
+	constexpr std::string_view ipv6_marker = "AAAA\t";
 
 	struct read_buffer {
+		const std::string_view* marker;
 		char* start;
 		size_t pos;
 	};
@@ -52,6 +55,10 @@ namespace {
 		auto real_sz = size * count;
 		auto read_buf = static_cast<read_buffer*>(buf);
 
+		std::copy(read_buf->marker->cbegin(),
+					 read_buf->marker->cend(),
+					 read_buf->start + read_buf->pos);
+		read_buf->pos += read_buf->marker->size();
 		std::copy(data, data + real_sz,
 					 read_buf->start + read_buf->pos);
 		read_buf->pos += real_sz;
@@ -74,12 +81,19 @@ void
 d3::ipify_com_resolver::resolve_into(std::span<char> resolved) {
 	auto curl = static_cast<CURL*>(_impl_ctx);
 	read_buffer buf{
+		.marker = nullptr,
 		.start = resolved.data(),
 		.pos = 0
 	};
 
-	if (ipv4()) load_ip_at(curl, ipv4_url.data(), &buf);
-	if (ipv6()) load_ip_at(curl, ipv6_url.data(), &buf);
+	if (ipv4()) {
+		buf.marker = &ipv4_marker;
+		load_ip_at(curl, ipv4_url.data(), &buf);
+	}
+	if (ipv6()) {
+		buf.marker = &ipv6_marker;
+		load_ip_at(curl, ipv6_url.data(), &buf);
+	}
 }
 
 d3::ipify_com_resolver::~ipify_com_resolver() noexcept {
