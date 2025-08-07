@@ -5,6 +5,7 @@ d3-*
 # Made config
 config.mk
 depend.mk
+pkgconf.log
 
 # clangd stuffs
 .cache

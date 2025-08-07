@@ -1,0 +1,7 @@
+# Built manpages
+*.[1234567890]
+!*.[1234567890].adoc
+
+# HTML
+*.html
+

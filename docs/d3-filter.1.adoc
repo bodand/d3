@@ -1,0 +1,191 @@
+= d3-filter(1)
+András Bodor <bodand@proton.me>
+v0.1.0
+:doctype: manpage
+
+== NAME
+
+d3-filter - Filter DNS records
+
+== SYNOPSIS
+
+*d3-filter* [-hv] _exec..._
+
+== OPTIONS
+
+*-h*::
+Print help information and exit.
+
+*-v*::
+Print version information and exit.
+
+
+== ARGUMENTS
+
+_exec..._::
+
+The executable program and arguments that the current process is to exec into.
+The _exec_ process will have the resolved IP addresses line-by-line available
+on their STDIN.  If not given, resolved addresses are printed on the current
+process's STDOUT and *d3-resolve* exits with 2.
+
+== DESCRIPTION
+
+The *d3-filter* program performs filtering based on a set of filters and data
+groups.  It is designed to be used with the *d3* DNS update pipeline.
+
+It reads is input to process from STDIN and perfoms the filtering line-by-line
+as described in the following subsections.
+
+After successfully performing the filtering procedure, *d3-filter* *exec(2)s*
+into its _exec..._ argument line.  If no arguments are passed as _exec..._, the
+filtered records are printed to STDOUT and *d3-filter* exits with exit code 2.
+
+[#format]
+=== Input format
+
+The *d3-filter* program processes each line one-by-one. If a line contains only
+whitespace characters or if it starts with a hash symbol (`#`) it is ignored. 
+
+In processed input two different kinds of rows are interpreted: filter rows and
+data rows.
+
+Filter rows:: 
+
+A filter row starts with a DNS record type (currently only A and AAAA, see
+<<caveats>>).  This enables filtering of data rows with that given record type.
+The value set by a filter stays in effect until a new filter row is encountered
+with the same record type.  Note that this triggers a <<flush>>.  The value to
+filter against follows the record type separated by a tab (`\t`) character.  No
+other configuration of whitespace is allowed (that is spaces, multiple tabs,
+etc. is not a valid filter row).
+
+Data rows::
+
+A data row secifies a domain (or any string that is not a DNS record type) a
+record type and a value.  Each of these is separated by a tab character.  A
+domain can appear multiple times with multiple values, but for it to be
+considered one block for filtering it must appear on consequent lines.
+Otherwise each grouping will be filtered by itself.
+
+=== Filtering
+
+Each group of data rows is filtered by each record type it contains.  (Contrary
+to how grouping must be consequent, record types within a group can be in any
+order.) A domain/record type pair is discarded from the output whenever a
+filter with a matching record type is active for processing the group with the
+same value as _any value in the group_.
+
+That is if there is a filter for `A` records with value `1.2.3.4`, then each
+group's domain will be printed that does not contain an `A` record with the
+value `1.2.3.4`.
+
+[#flush]
+=== Record flush
+
+A so called flush occurs in three sitations: a domain block is over and a new
+domain is found on the next input line; a new filter is activated; the end of
+input is reached.  Whenever this happens, the current domain is checked if it
+should be printed on all seen records for that domain.  For each record where
+there were no values that match the filter values, the domain is printed.
+
+For each printed domain the output is in the following format: (Each value is
+separated by a single tab character, even if the rendering pipeline of this
+document would have you believe otherwise.)
+
+	<domain>	<record-type>	<filter-value>
+
+The `<domain>` is the domain whose group failed the filter for a given
+`<record-type>`, while the `<filter-value>` contains the value of the _filter_
+that did not match the domain's group.  Each domain is only printed once per
+failed record type, even if there are multiple input records for it in the
+input.
+
+== EXIT CODES
+
+*1*:: An error occurred during normal operation.
+Additional information, if available, is printed to STDERR.
+
+*2*:: Incorrect usage.
+Additional information is available on STDERR.
+
+*3*:: Could not execute into present exec parameters.
+Error message from the system is available on STDERR.
+
+[#caveats]
+== CAVEATS 
+
+Currently *d3-filter* only handles A and AAAA records. This works for the
+designed use-case, but general use of filtering could be implemented to allow
+use of *d3-filter* for general DNS management. This is planned but not yet
+implemented.
+
+== EXAMPLES
+
+The following show some basic examples for using *d3-filter*.
+Each example shows the input and then the execution with the line starting with the dollar sign (`$`), and then the output.
+
+Note that the examples contain spaces instead of tabs for easier rendering.
+To get proper *d3* style input run `s/ /\t/g` on each input block.
+
+.Simple A record filtering
+=====
+In the following, since ex1.example.com contains a record with the record type A and value set in the filter (`1.2.3.4`), only ex2.example.com is printed with the failed filter's value.
+
+   A 1.2.3.4
+   ex1.example.com A 1.2.3.4
+   ex1.example.com A 1.2.3.5
+   ex2.example.com A 2.2.3.4
+   ex2.example.com A 2.2.3.5
+   $ d3-filter
+   ex2.example.com A 1.2.3.4
+
+=====
+
+.Multi record type filtering
+=====
+If multiple record types are filtered, only the matching subset is considered for filtering a given domain's group.
+That is, even if the AAAA record does not match ex2.example.com, because it only contains an A record, it is only filtered on the A value.
+
+   A 1.2.3.4
+   AAAA fedc:ba00::1234
+   ex1.example.com A 1.2.3.4
+   ex1.example.com AAAA fedc:ba00::9876
+   ex2.example.com A 1.2.3.4
+   $ d3-filter
+   ex1.example.com AAAA fedc:ba00::1234
+
+=====
+
+== SEE ALSO
+
+*d3-lookup(1)*::
+Look up currently configured IP address for and address.
+
+*d3-update(1)*::
+Update a given DNS record at the provided DNS provider.
+
+== COPYING 
+
+Copyright (c) 2025 {authors} +
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

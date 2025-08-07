@@ -34,6 +34,11 @@ else {
 	say "no, skipping pkgconf lookups"
 }
 
+print "checking for asciidoctor... ";
+my $asciidoctor = which "asciidoctor";
+say $asciidoctor;
+say $out qq,ASCIIDOCTOR_EXE = "$asciidoctor",;
+
 check_library "libcurl", "LIBCURL";
 
 # Impl #

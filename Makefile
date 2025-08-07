@@ -28,22 +28,29 @@
 
 .PHONY: clean all build distclean configure compile_db
 .SUFFIXES:
-.SUFFIXES: .cxx .o
+.SUFFIXES: .cxx .o .adoc
 
 PROGRAMS = d3-resolve d3-query d3-filter
 CC_FLAGS = -std=c++26 ${CFG_LIBCURL_CFLAGS}
 LINK_FLAGS = ${CFG_LIBCURL_LIBS}
 
+MANPAGE_SRC = docs/d3-filter.1.adoc \
+				  docs/d3-query.1.adoc \
+				  docs/d3-resolve.1.adoc
+MANPAGE_OUT = ${MANPAGE_SRC:.adoc=}
+
 EFFECTIVE_LINK_FLAGS = ${LINK_FLAGS} ${LDFLAGS}
 EFFECTIVE_CC_FLAGS = ${CC_FLAGS} ${CXXFLAGS} ${CFLAGS}
 
-all: build
+all: build build-docs
 
 include config.mk
 config.mk: configure.pl
-	./configure.pl 
+	@./configure.pl
 
 build: ${PROGRAMS}
+
+build-docs: ${MANPAGE_OUT}
 
 RESOLVE_SRC = d3-resolve.cxx resolver.cxx ipify-com-resolver.cxx
 RESOLVE_OBJ = ${RESOLVE_SRC:.cxx=.o}
@@ -60,9 +67,6 @@ FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
 d3-filter: ${FILTER_OBJ}
 	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
-.cxx.o:
-	${CXX} -c ${EFFECTIVE_CC_FLAGS} -o $@ $<
-
 clean:
 	-rm *.o *.bak
 	-rm ${PROGRAMS}
@@ -78,6 +82,12 @@ compile_commands.json: Makefile depend.mk config.mk
 
 include depend.mk
 depend.mk: Makefile ${RESOLVE_SRC} ${QUERY_SRC} ${FILTER_SRC}
-	touch $@
+	@touch $@
 	gccmakedep -f $@ -- ${EFFECTIVE_CC_FLAGS} -- ${RESOLVE_SRC}
+
+.cxx.o:
+	${CXX} -c ${EFFECTIVE_CC_FLAGS} -o $@ $<
+
+.adoc:
+	${ASCIIDOCTOR_EXE} -b manpage -o $@ $<
 
