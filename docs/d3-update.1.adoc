@@ -1,0 +1,106 @@
+= d3-update(1)
+András Bodor <bodand@proton.me>
+v0.1.0
+:doctype: manpage
+
+== NAME
+
+d3-update - Update DNS records
+
+== SYNOPSIS
+
+*d3-update* [-bhvz]
+
+== OPTIONS
+
+*-b* _backend_::
+The backend to use to update DNS records with.
+
+*-h*::
+Print help information and exit.
+
+*-v*::
+Print version information and exit.
+
+*-z*::
+The DNS zone to update.  If not given, the last two sections of the given
+domains are used.
+
+== ARGUMENTS
+
+The *d3-update* program does not take arguments.
+
+== DESCRIPTION
+
+The *d3-update* program reads a set of DNS records from STDIN and using the
+specified backend updates the corresponding DNS records.  The input format is
+the following:
+
+	<record>	<record-type>	<value>
+
+The DNS zones for which to update the given records are calculated by taking
+either the last two sections of the `<record>`'s value, or if the *-z* option
+was specified, then at that zone.  Note that by using the *-z* flag only one
+zone can be updated, whereas foregoing this and relying on the automatic
+resolution multiple zones can be updated.
+
+Every error encountered during processing is sent to STDERR, and if at least
+one error occurs, the exit code will be 1.
+
+Note that the updates are _not transactional_, that is if the first record is
+updated, and the second fails, the first _will not_ be rolled back.
+
+[#backends]
+=== Backends
+
+Currently, the following backends are supported.
+
+https://cloudflare.com/[cloudflare]::
+Update DNS records on a Cloudflare DNS server.
+
+dummy (default)::
+Do not update anything, just print the requested changes.
+
+== EXIT CODES
+
+*1*:: Could not reach the given DNS server.
+Additional information, if available, is printed to STDERR.
+
+*2*:: Incorrect usage.
+Additional information, if available, is printed to STDERR.
+
+== SEE ALSO
+
+*d3-filter(1)*::
+Perform filtering on an input stream of IP addresses and domain names.
+
+*d3-resolve(1)*::
+Update a given DNS record at the provided DNS provider.
+
+*d3-query(1)*::
+Perform DNS A and AAAA record lookups.
+
+== COPYING 
+
+Copyright (c) 2025 {authors} +
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+

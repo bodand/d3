@@ -80,23 +80,23 @@ Note that IPv6 formatting is unspecified.
 Multiple queries::
 
   $ d3-query -d my.example.com -d my2.example.com
-  my.example.com 1.2.3.4
-  my2.example.com 1.2.3.5
-  my2.example.com 1.2.3.6
+  my.example.com A 1.2.3.4
+  my2.example.com A 1.2.3.5
+  my2.example.com A 1.2.3.6
 
 Failed query::
 
   $ d3-query -d my.example.com -d my2.example.com -d my3.example.com
-  my.example.com 1.2.3.4
-  my2.example.com 1.2.3.5
-  my2.example.com 1.2.3.6
-  my3.example.com ?
+  my.example.com A 1.2.3.4
+  my2.example.com A 1.2.3.5
+  my2.example.com A 1.2.3.6
+  my3.example.com A ?
 
 Input forwarding::
 
-  $ echo "9.8.7.6" | d3-query -d my.example.com
-  9.8.7.6
-  my.example.com 1.2.3.4
+  $ echo "A 9.8.7.6" | d3-query -d my.example.com
+  A	9.8.7.6
+  my.example.com A 1.2.3.4
 
 
 == SEE ALSO

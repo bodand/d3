@@ -75,13 +75,16 @@ Error message from the system is available on STDERR.
 
 == SEE ALSO
 
-*d3-lookup(1)*::
-Look up currently configured IP address for and address.
+*d3-filter(1)*::
+Perform filtering on an input stream of IP addresses and domain names.
 
 *d3-update(1)*::
 Update a given DNS record at the provided DNS provider.
 
-== COPYING 
+*d3-query(1)*::
+Perform DNS A and AAAA record lookups.
+
+== COPYING
 
 Copyright (c) 2025 {authors} +
 Redistribution and use in source and binary forms, with or without
