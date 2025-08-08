@@ -55,11 +55,12 @@ build: ${PROGRAMS}
 build-docs: ${MANPAGE_OUT}
 
 COMMON_SRC = src/util/xerr.cxx \
-				src/util/config_bundle.cxx
+				src/util/config_bundle.cxx \
+				src/util/polymorph.cxx
 
 RESOLVE_SRC = ${COMMON_SRC} src/d3-resolve.cxx \
 				src/resolvers/resolver.cxx \
-				src/resolvers/ipify-com-resolver.cxx
+				src/resolvers/ipify-com-resolver.cxx src/util/main.cxx
 RESOLVE_OBJ = ${RESOLVE_SRC:.cxx=.o}
 src/d3-resolve: ${RESOLVE_OBJ}
 	${CXX} -o $@ ${RESOLVE_OBJ} ${EFFECTIVE_LINK_FLAGS}

@@ -24,16 +24,19 @@
 #define D3_CONFIG_BUNDLE_HXX
 
 #include <string_view>
+#include <unistd.h>
 
 namespace d3 {
 	struct config_bundle {
-		explicit
-		config_bundle(const std::string_view &getopts_arg,
-							const std::string_view progname,
-							const std::string_view usage_msg)
-			: _getopts_arg(getopts_arg)
-			, _progname(progname)
-			, _usage_msg(usage_msg) {}
+		template<class T>
+		static T
+		build(int &argc, char **&argv, std::string_view msg) {
+			static_assert(std::derived_from<T, config_bundle>,
+								"config_bundle::build can only construct derived classes");
+			T ret(argv[0], msg);
+			ret.read_config(argc, argv);
+			return ret;
+		}
 
 		virtual ~config_bundle() noexcept = default;
 
@@ -42,9 +45,6 @@ namespace d3 {
 
 		[[nodiscard]] bool
 		version() const noexcept { return _version; }
-
-		void
-		read_config(int &argc, char **&argv);
 
 		[[nodiscard]] int
 		do_shortcircuit() const;
@@ -56,10 +56,12 @@ namespace d3 {
 		finalize() const;
 
 	protected:
-		[[nodiscard]] bool
-		shorts() const noexcept {
-			return help() || version();
-		}
+		config_bundle(const std::string_view &getopts_arg,
+							const std::string_view progname,
+							const std::string_view usage_msg)
+			: _getopts_arg(getopts_arg)
+			, _progname(progname)
+			, _usage_msg(usage_msg) { }
 
 		[[nodiscard]] virtual int
 		do_finalize() const { return 0; }
@@ -67,11 +69,18 @@ namespace d3 {
 		[[nodiscard]] virtual bool
 		handle_option(char opt, char *optarg) = 0;
 
+	private:
 		void
 		help(const bool h) noexcept { _help = h; }
 
 		void
 		version(const bool v) noexcept { _version = v; }
+
+		void
+		read_config(int &argc, char **&argv);
+
+		void
+		setup_piping_fd();
 
 		[[nodiscard]] int
 		print_version() const;
@@ -79,20 +88,19 @@ namespace d3 {
 		[[nodiscard]] int
 		print_usage() const;
 
-		void
-		setup_piping_fd();
+		[[nodiscard]] bool
+		shorts() const noexcept { return help() || version(); }
 
-	private:
-		int _child_stdin;
-		int _output;
+		int _child_stdin{STDIN_FILENO};
+		int _output{STDOUT_FILENO};
 
 		std::string_view _getopts_arg;
 		std::string_view _progname;
 		std::string_view _usage_msg;
 		bool _help{false};
 		bool _version{false};
-		int _argc;
-		char **_argv;
+		int _argc{};
+		char **_argv{};
 	};
 }
 

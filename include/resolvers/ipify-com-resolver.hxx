@@ -28,13 +28,13 @@
 #include <span>
 
 #include "resolver.hxx"
+#include "util/polymorph.hxx"
 
 namespace d3 {
 	struct ipify_com_resolver final : resolver {
-		static void 
-		maker(std::span<std::byte> buf, bool ipv4, bool ipv6) {
-			assert(buf.size() >= sizeof(ipify_com_resolver));
-			::new (std::bit_cast<ipify_com_resolver*>(buf.data())) ipify_com_resolver(ipv4, ipv6);
+		static d3::polymorph<resolver>
+		build(bool ipv4, bool ipv6) {
+			return d3::make_polymorph<resolver, ipify_com_resolver>(ipv4, ipv6);
 		}
 
 		static void
@@ -43,13 +43,13 @@ namespace d3 {
 		}
 
 		void
-		resolve_into(std::span<char> resolved) override;
+		resolve_into(int output) override;
 
-		~ipify_com_resolver() noexcept;
+		~ipify_com_resolver() noexcept override;
 
-	private:
 		ipify_com_resolver(bool ipv4, bool ipv6);
 
+	private:
 		void* _impl_ctx;
    };
 }

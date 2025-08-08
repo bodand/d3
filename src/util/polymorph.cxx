@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,40 +20,4 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef D3_RESOLVER_HXX
-#define D3_RESOLVER_HXX
-
-#include <cstddef>
-#include <stdexcept>
-#include <span>
-
-namespace d3 {
-	struct resolver {
-		resolver(const bool ipv4, const bool ipv6)
-			: _ipv4(ipv4)
-			, _ipv6(ipv6) {}
-
-		virtual ~resolver() noexcept = default;
-
-		void
-		resolve(const int output) { resolve_into(output); }
-
-	protected:
-		virtual void
-		resolve_into(int output) = 0;
-
-		[[nodiscard]] bool
-		ipv4() const noexcept { return _ipv4; }
-
-		[[nodiscard]] bool
-		ipv6() const noexcept { return _ipv6; }
-
-	private:
-		bool
-		large_enough_for_resolve(std::size_t buf_sz);
-
-		bool _ipv4, _ipv6;
-	};
-}
-
-#endif
+#include <util/polymorph.hxx>

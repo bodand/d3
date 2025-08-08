@@ -20,9 +20,10 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <algorithm>
 #include <cstddef>
 #include <stdexcept>
+
+#include <unistd.h>
 
 #include <curl/curl.h>
 
@@ -31,8 +32,7 @@
 d3::ipify_com_resolver::ipify_com_resolver(bool ipv4, bool ipv6)
 	: resolver(ipv4, ipv6)
 	, _impl_ctx(curl_easy_init()) {
-	if (!_impl_ctx)
-		throw std::runtime_error("cannot initialize curl backend for ipify resolver");
+	if (!_impl_ctx) throw std::runtime_error("cannot initialize curl backend for ipify resolver");
 }
 
 namespace {
@@ -42,33 +42,30 @@ namespace {
 	constexpr std::string_view ipv6_marker = "AAAA\t";
 
 	struct read_buffer {
-		const std::string_view* marker;
-		char* start;
-		size_t pos;
+		const std::string_view *marker;
+		int output;
+
+		ssize_t
+		write(const std::string_view value) const noexcept {
+			::write(output, marker->data(), marker->size());
+			const auto written = ::write(output, value.data(), value.size());
+			::write(output, "\n", 1);
+			return written;
+		}
 	};
 
 	size_t
-	write_curl_buf(char* data, 
-						size_t size,
-						size_t count,
-						void* buf) {
-		auto real_sz = size * count;
-		auto read_buf = static_cast<read_buffer*>(buf);
-
-		std::copy(read_buf->marker->cbegin(),
-					 read_buf->marker->cend(),
-					 read_buf->start + read_buf->pos);
-		read_buf->pos += read_buf->marker->size();
-		std::copy(data, data + real_sz,
-					 read_buf->start + read_buf->pos);
-		read_buf->pos += real_sz;
-		read_buf->start[read_buf->pos++] = '\n';
-
-		return real_sz;
+	write_curl_buf(const char *data,
+						const size_t size,
+						const size_t count,
+						void *buf) {
+		const auto real_sz = size * count;
+		const auto read_buf = static_cast<read_buffer *>(buf);
+		return read_buf->write(std::string_view(data, real_sz));
 	}
 
 	bool
-	load_ip_at(CURL* curl, const char* url, read_buffer* buf) {
+	load_ip_at(CURL *curl, const char *url, read_buffer *buf) {
 		curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, static_cast<void*>(buf));
@@ -78,12 +75,11 @@ namespace {
 }
 
 void
-d3::ipify_com_resolver::resolve_into(std::span<char> resolved) {
-	auto curl = static_cast<CURL*>(_impl_ctx);
+d3::ipify_com_resolver::resolve_into(const int output) {
+	const auto curl = _impl_ctx;
 	read_buffer buf{
 		.marker = nullptr,
-		.start = resolved.data(),
-		.pos = 0
+		.output = output
 	};
 
 	if (ipv4()) {
@@ -97,6 +93,5 @@ d3::ipify_com_resolver::resolve_into(std::span<char> resolved) {
 }
 
 d3::ipify_com_resolver::~ipify_com_resolver() noexcept {
-	curl_easy_cleanup(static_cast<CURL*>(_impl_ctx));
+	curl_easy_cleanup(_impl_ctx);
 }
-

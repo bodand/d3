@@ -102,8 +102,6 @@ d3::config_bundle::print_usage() const {
 
 void
 d3::config_bundle::setup_piping_fd() {
-	_child_stdin = STDIN_FILENO;
-	_output = STDOUT_FILENO;
 	if (_argc == 0) return;
 
 	int pfd[2];

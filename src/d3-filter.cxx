@@ -41,17 +41,16 @@ using namespace std::literals;
 
 namespace d3::filter {
 	struct config_bundle final : ::d3::config_bundle {
-		config_bundle(int &argc, char **&argv,
-							std::string_view usage_msg)
-			: d3::config_bundle("hv", argv[0], usage_msg) {
-			read_config(argc, argv);
-		}
-
 	protected:
+		config_bundle(std::string_view progname, std::string_view usage_msg)
+			: d3::config_bundle("hv", progname, usage_msg) {}
+
 		[[nodiscard]] bool
 		handle_option(const char opt, char *optarg) override {
 			return ::d3::config_bundle::handle_option(opt, optarg);
 		}
+	private:
+		friend ::d3::config_bundle;
 	};
 }
 
@@ -60,12 +59,14 @@ namespace {
 		struct line_split {
 			line_split(std::string_view line) {
 				const auto separator0 = line.find('\t');
-				if (separator0 == std::string_view::npos) throw std::runtime_error(
-					"invalid line: does not contain separator tab betwen domain and type");
+				if (separator0 == std::string_view::npos)
+					throw std::runtime_error(
+						"invalid line: does not contain separator tab betwen domain and type");
 
 				const auto separator1 = line.find('\t', separator0 + 1);
-				if (separator1 == std::string_view::npos) throw std::runtime_error(
-					"invalid line: does not contain separator tab between type and IP");
+				if (separator1 == std::string_view::npos)
+					throw std::runtime_error(
+						"invalid line: does not contain separator tab between type and IP");
 
 				domain = line.substr(0, separator0);
 				type = line.substr(separator0 + 1, separator1 - separator0 - 1);
@@ -99,10 +100,12 @@ namespace {
 
 			line_split input(line);
 
-			if (input.is_ipv6() && _current_ipv6.empty()) throw std::runtime_error(
-				"invalid line: missing filter for AAAA rows before encountering AAAA entry");
-			if (input.is_ipv4() && _current_ipv4.empty()) throw std::runtime_error(
-				"invalid line: missing filter for A rows before encountering A entry");
+			if (input.is_ipv6() && _current_ipv6.empty())
+				throw std::runtime_error(
+					"invalid line: missing filter for AAAA rows before encountering AAAA entry");
+			if (input.is_ipv4() && _current_ipv4.empty())
+				throw std::runtime_error(
+					"invalid line: missing filter for A rows before encountering A entry");
 
 			if (input.domain == _current_domain) return current_domain_update(input);
 
@@ -224,7 +227,8 @@ using d3::xerrx;
 
 int
 d3_main(int &argc, char **&argv) noexcept try {
-	const d3::filter::config_bundle cfg(argc, argv, "filter rows based on record types");
+	const auto cfg = d3::config_bundle::build<d3::filter::config_bundle>(
+		argc, argv, "filter rows based on record types");
 	if (const int early = cfg.do_shortcircuit()) return early;
 
 	filterer filter(cfg.output());
