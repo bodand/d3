@@ -56,11 +56,12 @@ build-docs: ${MANPAGE_OUT}
 
 COMMON_SRC = src/util/xerr.cxx \
 				src/util/config_bundle.cxx \
-				src/util/polymorph.cxx
+				src/util/polymorph.cxx \
+				src/util/main.cxx
 
 RESOLVE_SRC = ${COMMON_SRC} src/d3-resolve.cxx \
 				src/resolvers/resolver.cxx \
-				src/resolvers/ipify-com-resolver.cxx src/util/main.cxx
+				src/resolvers/ipify-com-resolver.cxx
 RESOLVE_OBJ = ${RESOLVE_SRC:.cxx=.o}
 src/d3-resolve: ${RESOLVE_OBJ}
 	${CXX} -o $@ ${RESOLVE_OBJ} ${EFFECTIVE_LINK_FLAGS}
@@ -70,7 +71,7 @@ QUERY_OBJ = ${QUERY_SRC:.cxx=.o}
 src/d3-query: ${QUERY_OBJ}
 	${CXX} -o $@ ${QUERY_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
-FILTER_SRC = ${COMMON_SRC} src/d3-filter.cxx src/util/main.cxx
+FILTER_SRC = ${COMMON_SRC} src/d3-filter.cxx
 FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
 src/d3-filter: ${FILTER_OBJ}
 	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
