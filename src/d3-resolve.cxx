@@ -107,7 +107,7 @@ namespace {
 using d3::xerr;
 using d3::xerrx;
 
-int
+std::optional<int>
 d3_main(int &argc, char **&argv) noexcept try {
 	const auto cfg = d3::config_bundle::build<d3::resolve::config_bundle>(
 		argc, argv, "resolve current public IP address");

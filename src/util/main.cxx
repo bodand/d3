@@ -25,7 +25,7 @@
 
 #include <util/xerr.hxx>
 
-int
+std::optional<int>
 d3_main(int& argc, char**& argv) noexcept;
 
 int
@@ -34,8 +34,8 @@ main(int argc, char **argv) {
 	char posix_buf[] = "POSIXLY_CORRECT=1";
 	putenv(posix_buf);
 
-	if (const int ret = d3_main(argc, argv))
-		return ret;
+	if (const auto ret = d3_main(argc, argv))
+		return *ret;
 
 	execvp(argv[0], argv);
 	return d3::xerr(3, "execvp");

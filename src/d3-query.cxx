@@ -104,7 +104,7 @@ namespace d3::query {
 			_domains.emplace_back(domain);
 		}
 
-		mutable char _hostname_buf[HOST_NAME_MAX + 1];
+		mutable char _hostname_buf[HOST_NAME_MAX + 1]{};
 		mutable std::string_view _hostname;
 		std::vector<std::string_view> _domains;
 		bool _ipv4{false}, _ipv6{false};
@@ -223,7 +223,7 @@ namespace {
 	}
 }
 
-int
+std::optional<int>
 d3_main(int &argc, char **&argv) noexcept try {
 	const auto cfg = d3::config_bundle::build<d3::query::config_bundle>(
 		argc, argv, "resolve current public IP address");
