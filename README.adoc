@@ -1,4 +1,5 @@
 = d3 (dynamic dns daemon)
+András Bodor <bodand@proton.me>
 
 d3 is a set of executables written in C++ that provide easily usable utilities
 to manage self-hosted services that are stuck behind the ISP's dynamic IP
@@ -44,7 +45,7 @@ You will need to provide the required development libraries and headers for thes
 
 == COPYING
 
-Copyright (c) 2025 {author}
+Copyright (c) 2025 {author} <{email}>
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
