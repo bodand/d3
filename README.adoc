@@ -1,7 +1,7 @@
 = d3 (dynamic dns daemon)
 
 d3 is a set of executables written in C++ that provide easily usable utilities
-to manage self-hosted services that are stuck behind the ISP's dynamic DNS
+to manage self-hosted services that are stuck behind the ISP's dynamic IP
 whims.
 
 Note, that d3 is not actually a daemon.
@@ -24,13 +24,13 @@ The lookup tools are mostly an easier to handle version of nslookup/dig that is 
 
 Each of the tools have their own documentation:
 
-href:docs/d3-resolve[d3-resolve]::
+link:docs/d3-resolve.1.adoc[d3-resolve]::
 	Resolve the current IP address and pass it over to a process on STDIN.
 
-href:docs/d3-query[d3-query]::
+link:docs/d3-query.1.adoc[d3-query]::
    Query A and AAAA DNS records.
 
-href:docs/d3-filter[d3-filter]::
+link:docs/d3-filter.1.adoc[d3-filter]::
    Filter input lines based on record types and grouped domains.
 
 == Dependencies
@@ -44,7 +44,7 @@ You will need to provide the required development libraries and headers for thes
 
 == COPYING
 
-Copyright (c) 2025 {authors}
+Copyright (c) 2025 {author}
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:
