@@ -21,35 +21,28 @@
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <cassert>
-#include <cassert>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <cstring>
 #include <exception>
-#include <exception>
-#include <iterator>
 #include <iterator>
 #include <print>
 
 #include <netinet/in.h>
-#include <netdb.h>
 #include <stdexcept>
-#include <stdexcept>
-#include <string_view>
 #include <string_view>
 #include <unistd.h>
 
-#include "xerr.hxx" 
+#include <util/xerr.hxx>
 
 using namespace std::literals;
 
 struct config_bundle {
-	bool
+	[[nodiscard]] bool
 	help() const noexcept { return _help; }
 
-	bool
+	[[nodiscard]] bool
 	version() const noexcept { return _version; }
 
 	void

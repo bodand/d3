@@ -30,8 +30,10 @@
 .SUFFIXES:
 .SUFFIXES: .cxx .o .adoc
 
-PROGRAMS = d3-resolve d3-query d3-filter
-CC_FLAGS = -std=c++26 ${CFG_LIBCURL_CFLAGS}
+PROGRAMS = src/d3-resolve \
+			src/d3-query \
+			src/d3-filter
+CC_FLAGS = -Iinclude -std=c++26 ${CFG_LIBCURL_CFLAGS}
 LINK_FLAGS = ${CFG_LIBCURL_LIBS}
 
 MANPAGE_SRC = docs/d3-filter.1.adoc \
@@ -52,23 +54,28 @@ build: ${PROGRAMS}
 
 build-docs: ${MANPAGE_OUT}
 
-RESOLVE_SRC = d3-resolve.cxx resolver.cxx ipify-com-resolver.cxx
+RESOLVE_SRC = src/d3-resolve.cxx \
+				src/resolvers/resolver.cxx \
+				src/resolvers/ipify-com-resolver.cxx \
+				src/util/xerr.cxx
 RESOLVE_OBJ = ${RESOLVE_SRC:.cxx=.o}
-d3-resolve: ${RESOLVE_OBJ}
+src/d3-resolve: ${RESOLVE_OBJ}
 	${CXX} -o $@ ${RESOLVE_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
-QUERY_SRC = d3-query.cxx
+QUERY_SRC = src/d3-query.cxx \
+				src/util/xerr.cxx
 QUERY_OBJ = ${QUERY_SRC:.cxx=.o}
-d3-query: ${QUERY_OBJ}
+src/d3-query: ${QUERY_OBJ}
 	${CXX} -o $@ ${QUERY_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
-FILTER_SRC = d3-filter.cxx
+FILTER_SRC = src/d3-filter.cxx \
+				src/util/xerr.cxx
 FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
-d3-filter: ${FILTER_OBJ}
+src/d3-filter: ${FILTER_OBJ}
 	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
 clean:
-	-rm *.o *.bak
+	-rm ${RESOLVE_OBJ} ${QUERY_OBJ} ${FILTER_OBJ} *.bak
 	-rm ${PROGRAMS}
 
 distclean: clean

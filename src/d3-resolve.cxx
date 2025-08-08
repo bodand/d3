@@ -32,51 +32,51 @@
 
 #include <unistd.h>
 
-#include "ipify-com-resolver.hxx"
-#include "xerr.hxx" 
+#include <resolvers/ipify-com-resolver.hxx>
+#include <util/xerr.hxx>
 
 struct config_bundle {
-	bool
+	[[nodiscard]] bool
 	ipv4() const noexcept { 
 		if (_ip_default) return true;
 		return _ipv4;
 	}
 
-	bool
+	[[nodiscard]] bool
 	ipv6() const noexcept { 
 		if (_ip_default) return false;
 		return _ipv6;
 	}
 
 	void
-	ipv4(bool v4) noexcept { 
+	ipv4(const bool v4) noexcept {
 		_ip_default = false;
 		_ipv4 = v4;
 	}
 
 	void
-	ipv6(bool v6) noexcept { 
+	ipv6(const bool v6) noexcept {
 		_ip_default = false;
 		_ipv6 = v6;
 	}
 
-	bool
+	[[nodiscard]] bool
 	help() const noexcept { return _help; }
 
-	bool
+	[[nodiscard]] bool
 	version() const noexcept { return _version; }
 
 	void
-	help(bool h) noexcept { _help = h; }
+	help(const bool h) noexcept { _help = h; }
 
 	void
-	version(bool v) noexcept { _version = v; }
+	version(const bool v) noexcept { _version = v; }
 
-	std::string_view
+	[[nodiscard]] std::string_view
 	backend() const noexcept { return _backend; }
 
 	void
-	backend(char* be) noexcept { _backend = be; } 
+	backend(const char* be) noexcept { _backend = be; }
 private:
 	std::string_view _backend{"ipify"};
 	bool _help{false};
@@ -117,7 +117,7 @@ print_version() {
 }
 
 int
-print_usage(char* progname) {
+print_usage(const char* const progname) {
 	std::cout << "d3 utility: resolve current public IP address\n\n";
 	std::cout << "usage:\n";
 	std::cout << "\t" << progname << " [-46bhv] exec...\n";
@@ -185,8 +185,8 @@ main(int argc, char** argv) {
 	int pfd[2];
 	if (pipe(pfd) < 0) 
 		return xerr(1, "pipe");
-	int pipe_read = pfd[0];
-	int pipe_write = pfd[1];
+	const int pipe_read = pfd[0];
+	const int pipe_write = pfd[1];
 
 	if (dup2(pipe_read, STDIN_FILENO) < 0)
 		return xerr(1, "dup2");
@@ -196,8 +196,7 @@ main(int argc, char** argv) {
 	if (close(pipe_write) < 0) 
 		return xerr(1, "close");
 
-	char* exe = argv[0];
+	const char* const exe = argv[0];
 	execvp(exe, argv);
 	return xerr(1, "execvp");
 }
-

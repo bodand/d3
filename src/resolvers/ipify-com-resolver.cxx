@@ -26,7 +26,7 @@
 
 #include <curl/curl.h>
 
-#include "ipify-com-resolver.hxx"
+#include <resolvers/ipify-com-resolver.hxx>
 
 d3::ipify_com_resolver::ipify_com_resolver(bool ipv4, bool ipv6)
 	: resolver(ipv4, ipv6)

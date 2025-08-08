@@ -22,52 +22,46 @@
 
 #include <algorithm>
 #include <cerrno>
-#include <cerrno>
 #include <climits>
-#include <exception>
-#include <format>
 #include <format>
 #include <iostream>
 #include <memory>
-#include <memory>
-#include <optional>
 #include <optional>
 #include <ostream>
 #include <print>
 #include <string_view>
 #include <vector>
 
-#include <netdb.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/types.h>
 #include <fcntl.h>
+#include <netdb.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
 
-#include "xerr.hxx" 
+#include <util/xerr.hxx>
 
 struct config_bundle {
 	bool
-	ipv4() const noexcept { 
+	ipv4() const noexcept {
 		if (_ip_default) return true;
 		return _ipv4;
 	}
 
 	bool
-	ipv6() const noexcept { 
+	ipv6() const noexcept {
 		if (_ip_default) return false;
 		return _ipv6;
 	}
 
 	void
-	ipv4(bool v4) noexcept { 
+	ipv4(bool v4) noexcept {
 		_ip_default = false;
 		_ipv4 = v4;
 	}
 
 	void
-	ipv6(bool v6) noexcept { 
+	ipv6(bool v6) noexcept {
 		_ip_default = false;
 		_ipv6 = v6;
 	}
@@ -94,9 +88,9 @@ struct config_bundle {
 	}
 
 	void
-	add_domain(char* domain) noexcept { 
+	add_domain(char* domain) noexcept {
 		_domains.emplace_back(domain);
-	} 
+	}
 private:
 	mutable char _hostname_buf[HOST_NAME_MAX + 1];
 	mutable std::string_view _hostname;
@@ -111,8 +105,8 @@ private:
 config_bundle
 read_config(int& argc, char**& argv) {
 	config_bundle cfg;
-	
-	for (int opt = getopt(argc, argv, "46d:hv"); 
+
+	for (int opt = getopt(argc, argv, "46d:hv");
 			opt != -1;
 			opt = getopt(argc, argv, "46d:hv")) {
 		switch (opt) {
@@ -121,7 +115,7 @@ read_config(int& argc, char**& argv) {
 		case 'v': cfg.version(true); break;
 		case 'd': cfg.add_domain(optarg); break;
 		case 'h':
-		default:	
+		default:
 			cfg.help(true);
 			break;
 		}
@@ -160,10 +154,10 @@ namespace {
 	std::vector<addr>
 	load_address(std::string_view domain, bool ipv4, bool ipv6) {
 		constexpr auto ai_flags = AI_IDN | AI_CANONIDN | AI_CANONNAME;
-		const auto ip_version = ipv6 && ipv4 
+		const auto ip_version = ipv6 && ipv4
 			? AF_UNSPEC
 			: (ipv4 * AF_INET) | (ipv6 * AF_INET6);
-		
+
 		const auto addr_filter = (struct addrinfo){
 			.ai_flags = ai_flags,
 			.ai_family = ip_version,
@@ -186,9 +180,9 @@ namespace {
 			return d3::xerrx(std::move(ret), "getaddrinfo: {}", gai_strerror(errc));
 		}
 		ainfo.reset(raw);
-	
+
 		const auto canon = std::string(ainfo->ai_canonname);
-		
+
 		for (const auto* ptr = ainfo.get(); ptr; ptr = ptr->ai_next) {
 			const auto* sock = ptr->ai_addr;
 			char ip[sizeof("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF")];
@@ -210,11 +204,11 @@ namespace {
 			}
 			ret.emplace_back(ip_af_to_type(sock->sa_family), canon, ip);
 		}
-			
+
 		return ret;
 	}
 
-	int 
+	int
 	print_version() {
 		std::cout << "v0.1.0"; // XXX configure generate this
 		return 2;
@@ -248,7 +242,7 @@ main(int argc, char** argv) {
 	int pipe_write = STDOUT_FILENO;
 	if (argc > 0) {
 		int pfd[2];
-		if (pipe(pfd) < 0) 
+		if (pipe(pfd) < 0)
 			return xerr(1, "pipe");
 		pipe_read = pfd[0];
 		pipe_write = pfd[1];
@@ -258,7 +252,7 @@ main(int argc, char** argv) {
 	if (old < 0) return xerr(1, "fcnt(stdin, F_GETFL)");
 	if (fcntl(STDIN_FILENO, F_SETFL, old | O_NONBLOCK) < 0)
 		return xerr(1, "fcntl(stdin, F_SETFL, +NONBLOCK)");
-	
+
 	// shovel everything from stdin to pipe_write
 	char buf[8192];
 	for (;;) {
@@ -268,7 +262,7 @@ main(int argc, char** argv) {
 			if (errno == EAGAIN) break; // no more input
 			return xerr(1, "read");
 		}
-		
+
 		write(pipe_write, buf, read_cnt);
 	}
 	static_assert(std::size(buf) >= HOST_NAME_MAX + 1 + INET6_ADDRSTRLEN + 1,
@@ -297,7 +291,7 @@ main(int argc, char** argv) {
 	// manipulate STDIN into our output
 	if (dup2(pipe_read, STDIN_FILENO) < 0)
 		return xerr(1, "dup2");
-	if (close(pipe_write) < 0) 
+	if (close(pipe_write) < 0)
 		return xerr(1, "close");
 
 	char* exe = argv[0];

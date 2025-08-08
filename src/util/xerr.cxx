@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,14 +20,4 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include "resolver.hxx"
-
-bool
-d3::resolver::large_enough_for_resolve(std::size_t buf_sz) {
-	size_t needed = 0;
-	// NUL included for \n which is added when generating
-	if (_ipv4) needed += sizeof("A\t255.255.255.255"); 
-	if (_ipv6) needed += sizeof("AAAA\tFFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF");
-	return buf_sz >= needed;
-}
-
+#include <util/xerr.hxx>
