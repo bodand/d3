@@ -38,5 +38,5 @@ main(int argc, char **argv) {
 		return ret;
 
 	execvp(argv[0], argv);
-	return d3::xerr(1, "execvp");
+	return d3::xerr(3, "execvp");
 }
