@@ -61,6 +61,16 @@ Update DNS records on a Cloudflare DNS server.
 dummy (default)::
 Do not update anything, just print the requested changes.
 
+== ENVIRONMENT
+
+Different backends may use the process' environment variables to get required
+credentials.  The following listing shows each understood variable, which
+backend relies on it, and if is required for its operation.
+
+D3_CF_TOKEN (cloudflare, required)::
+The Cloudflare API token.
+Note that it needs to have edit access to all changed DNS zones.
+
 == EXIT CODES
 
 *1*:: Could not reach the given DNS server.

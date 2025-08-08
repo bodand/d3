@@ -32,13 +32,15 @@
 
 PROGRAMS = src/d3-resolve \
 			src/d3-query \
-			src/d3-filter
+			src/d3-filter \
+			src/d3-update
 CC_FLAGS = -Iinclude -std=c++26 ${CFG_LIBCURL_CFLAGS}
 LINK_FLAGS = ${CFG_LIBCURL_LIBS}
 
 MANPAGE_SRC = docs/d3-filter.1.adoc \
 				  docs/d3-query.1.adoc \
-				  docs/d3-resolve.1.adoc
+				  docs/d3-resolve.1.adoc \
+				  docs/d3-update.1.adoc
 MANPAGE_OUT = ${MANPAGE_SRC:.adoc=}
 
 EFFECTIVE_LINK_FLAGS = ${LINK_FLAGS} ${LDFLAGS}
@@ -75,6 +77,11 @@ FILTER_SRC = ${COMMON_SRC} src/d3-filter.cxx
 FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
 src/d3-filter: ${FILTER_OBJ}
 	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
+
+UPDATE_SRC = ${COMMON_SRC} src/d3-update.cxx
+UPDATE_OBJ = ${UPDATE_SRC:.cxx=.o}
+src/d3-update: ${UPDATE_OBJ}
+	${CXX} -o $@ ${UPDATE_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
 clean:
 	-rm ${RESOLVE_OBJ} ${QUERY_OBJ} ${FILTER_OBJ} *.bak

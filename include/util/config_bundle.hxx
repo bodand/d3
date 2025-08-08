@@ -23,6 +23,7 @@
 #ifndef D3_CONFIG_BUNDLE_HXX
 #define D3_CONFIG_BUNDLE_HXX
 
+#include <optional>
 #include <string_view>
 #include <unistd.h>
 
@@ -52,8 +53,11 @@ namespace d3 {
 		[[nodiscard]] int
 		output() const { return _output; }
 
-		[[nodiscard]] int
+		[[nodiscard]] std::optional<int>
 		finalize() const;
+
+		[[nodiscard]] std::string_view
+		progname() const { return _progname; }
 
 	protected:
 		config_bundle(const std::string_view &getopts_arg,
@@ -63,8 +67,8 @@ namespace d3 {
 			, _progname(progname)
 			, _usage_msg(usage_msg) { }
 
-		[[nodiscard]] virtual int
-		do_finalize() const { return 0; }
+		[[nodiscard]] virtual std::optional<int>
+		do_finalize() const { return std::nullopt; }
 
 		[[nodiscard]] virtual bool
 		handle_option(char opt, char *optarg) = 0;

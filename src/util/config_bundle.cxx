@@ -61,9 +61,9 @@ d3::config_bundle::do_shortcircuit() const {
 	return 0;
 }
 
-int
+std::optional<int>
 d3::config_bundle::finalize() const {
-	if (const int custom = do_finalize()) return custom;
+	if (const auto custom = do_finalize()) return custom;
 
 	// no exec... passed, _output was STDOUT, we are done
 	if (_argc == 0) return 2;
@@ -72,7 +72,7 @@ d3::config_bundle::finalize() const {
 	if (dup2(_child_stdin, STDIN_FILENO) != 0) return xerr(1, "dup2");
 	if (close(_output) != 0) return xerr(1, "close");
 
-	return 0; // all good, proceed to exec
+	return std::nullopt; // all good, proceed to exec
 }
 
 bool

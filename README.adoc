@@ -34,14 +34,52 @@ link:docs/d3-query.1.adoc[d3-query]::
 link:docs/d3-filter.1.adoc[d3-filter]::
    Filter input lines based on record types and grouped domains.
 
+[#dependencies]
 == Dependencies
 
-The following depdendencies are used by d3:
+The following dependencies are used by d3:
 
 - libcurl
 - https://github.com/nlohmann/json:[nlohman's json library] (this is bundled)
 
 You will need to provide the required development libraries and headers for these libraries.
+
+Other than that, the following also need to be available on your system for building *d3*:
+
+- A POSIX compatible _make(1)_ implementation.
+If you believe your _make(1)_ is POSIX compliant, yet building fails, please file an issue.
+- Perl v5.38 or above.
+If you use https://mise.jdx.dev/[mise], a _mise.toml_ is provided to ensure a correct version is used.
+- _File::Which_ CPAN (Perl) package.
+
+== Building
+
+After acquiring all <<dependencies>>, building *d3* should be easily the following:
+
+----
+make [-j<n>] <1>
+[doas|sudo] make install [PREFIX=/opt/my/path] <2>
+----
+<1> This step configures and builds *d3* on your system.
+To perform parallel compilation the *-j<n>* flag may be passed to make, if your _make(1)_ supports it.
+<2> If you wish to install *d3* on your system as well, also run this step.
+You may optionally need to prefix it with `doas` (or `sudo`) to elevate make's privileges or set a `PREFIX` for a custom installation directory (default is _/usr/local_).
+
+== Example
+
+An example runit service using execline and snooze to check for required updates every hour and update a Cloudflare DNS entry if your IP has changed is the following:
+
+[source,execline]
+----
+#!/usr/bin/execlineb -P
+export D3_CF_TOKEN my-token <1>
+snooze -H*
+   d3-resolve
+   d3-query -d my.domain.com
+   d3-filter
+   d3-update -b cloudflare
+----
+<1> If you are concerned for storing the token here, you can easily make this more complex to not do that.
 
 == COPYING
 
