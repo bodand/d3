@@ -26,9 +26,13 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 
-.PHONY: clean all build distclean configure compile_db
+.PHONY: clean all build distclean configure compile_db install _real_install
 .SUFFIXES:
 .SUFFIXES: .cxx .o .adoc
+
+BIN_DIR = ${PREFIX}/bin
+MAN_DIR = ${PREFIX}/share/man
+MAN1_DIR = ${MAN_DIR}/man1
 
 PROGRAMS = src/d3-resolve \
 			src/d3-query \
@@ -110,3 +114,15 @@ depend.mk: Makefile ${RESOLVE_SRC} ${QUERY_SRC} ${FILTER_SRC}
 .adoc:
 	${ASCIIDOCTOR_EXE} -b manpage -o $@ $<
 
+install: all
+	+@if test -n "${PREFIX}"; then \
+		${MAKE} _real_install "PREFIX=${PREFIX}"; \
+	else \
+		${MAKE} _real_install "PREFIX=/usr/local"; \
+    fi
+
+_real_install:
+	mkdir -p ${BIN_DIR}
+	mkdir -p ${MAN1_DIR}
+	install -m755 -s ${PROGRAMS} ${BIN_DIR}/
+	install -m644 ${MANPAGE_OUT} ${MAN1_DIR}/
