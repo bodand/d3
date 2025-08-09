@@ -124,5 +124,5 @@ install: all
 _real_install:
 	mkdir -p ${BIN_DIR}
 	mkdir -p ${MAN1_DIR}
-	install -m755 -s ${PROGRAMS} ${BIN_DIR}/
-	install -m644 ${MANPAGE_OUT} ${MAN1_DIR}/
+	install -m755 -s ${PROGRAMS} ${BIN_DIR}
+	install -m644 ${MANPAGE_OUT} ${MAN1_DIR}

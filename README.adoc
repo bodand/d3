@@ -76,7 +76,8 @@ An example runit service using execline and snooze to check for required updates
 ----
 #!/usr/bin/execlineb -P
 export D3_CF_TOKEN my-token <1>
-snooze -H*
+fdmove -c 2 1
+exec snooze -H*
    d3-resolve
    d3-query -d my.domain.com
    d3-filter
@@ -86,6 +87,9 @@ snooze -H*
 
 == COPYING
 
+For licenses of relied upon external libraries see the link:docs/licensing.adoc[docs/licensing.adoc] file.
+
+----
 Copyright (c) 2025 {author} <{email}>
 
 Redistribution and use in source and binary forms, with or without
@@ -108,4 +112,4 @@ SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
 CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
 OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+----
