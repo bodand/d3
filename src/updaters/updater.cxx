@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,34 +20,32 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef D3_IPIFY_COM_RESOLVER_HXX
-#define D3_IPIFY_COM_RESOLVER_HXX
+#include <updaters/updater.hxx>
 
-#include <bit>
-#include <cassert>
-#include <span>
+std::string_view
+d3::updater::zone_of(std::string_view domain) {
+	// Get the last max. two sections of the domain:
+	//		my.example.com -> example.com
+	//		my.example.com. -> example.com
+	//		my.other.example.com -> example.com
+	//		my.com -> my.com
+	//		tld.	-> tld (this will likely fail later, unlikely that tld
+	//						  maintainers are going to use d3 in any capacity)
 
-#include <resolvers/resolver.hxx>
-#include <util/polymorph.hxx>
+	if (domain.back() == '.') domain = domain.substr(0, domain.size() - 1);
 
-namespace d3 {
-	struct ipify_com_resolver final : resolver {
-		static polymorph<resolver>
-		build(bool ipv4, bool ipv6) {
-			return d3::make_polymorph<resolver, ipify_com_resolver>(ipv4, ipv6);
-		}
+	std::string_view searcher = domain;
 
-		void
-		resolve_into(int output) override;
+	int found = 0;
+	for (; found < 2; ++found) {
+		const auto next_dot = searcher.rfind('.');
+		if (next_dot == std::string_view::npos) break;
 
-		~ipify_com_resolver() noexcept override;
+		searcher = searcher.substr(0, next_dot);
+	}
 
-		ipify_com_resolver(bool ipv4, bool ipv6);
-
-	private:
-		void* _impl_ctx;
-   };
+	// tld or my.tld
+	if (found == 0 || found == 1) return domain;
+	// some.other.things.my.tld
+	return domain.substr(searcher.size() + 1);
 }
-
-#endif
-

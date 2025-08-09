@@ -56,7 +56,7 @@ updated, and the second fails, the first _will not_ be rolled back.
 Currently, the following backends are supported.
 
 https://cloudflare.com/[cloudflare]::
-Update DNS records on a Cloudflare DNS server.
+Update DNS records on a Cloudflare DNS server. Update only, see <<caveats>>.
 
 dummy (default)::
 Do not update anything, just print the requested changes.
@@ -78,6 +78,14 @@ Additional information, if available, is printed to STDERR.
 
 *2*:: Incorrect usage.
 Additional information, if available, is printed to STDERR.
+
+[#caveats]
+== CAVEATS
+
+Some backends do not support creating DNS records, only updating existing ones.
+They are marked update only.  This is in-line with ddclient's capabilities, but
+if someone needs to create records if they don't exist, both an issue and
+patches/PR-s welcome.
 
 == SEE ALSO
 

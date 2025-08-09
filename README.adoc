@@ -34,6 +34,9 @@ link:docs/d3-query.1.adoc[d3-query]::
 link:docs/d3-filter.1.adoc[d3-filter]::
    Filter input lines based on record types and grouped domains.
 
+link:docs/d3-update.1.adoc[d3-update]::
+   Update DNS records using a selectable backend.
+
 [#dependencies]
 == Dependencies
 

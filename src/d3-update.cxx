@@ -27,6 +27,11 @@
 #include <util/config_bundle.hxx>
 #include <util/xerr.hxx>
 
+#include "updaters/cloudflare_updater.hxx"
+#include "updaters/dummy_updater.hxx"
+#include "updaters/updater.hxx"
+#include "util/polymorph.hxx"
+
 using namespace std::literals;
 
 using d3::xerr;
@@ -43,10 +48,10 @@ namespace d3::resolve {
 	protected:
 		config_bundle(const std::string_view progname,
 							const std::string_view usage_msg)
-			: d3::config_bundle("b:hvz:"sv, progname, usage_msg) {}
+			: d3::config_bundle("b:hvz:"sv, progname, usage_msg) { }
 
 		[[nodiscard]] bool
-		handle_option(char opt, char *optarg) override {
+		handle_option(char opt, char* optarg) override {
 			switch (opt) {
 				case 'b': backend(optarg);
 					break;
@@ -64,30 +69,45 @@ namespace d3::resolve {
 		friend d3::config_bundle;
 
 		void
-		backend(const char *be) noexcept { _backend = be; }
+		backend(const char* be) noexcept { _backend = be; }
 
 		void
-		zone(const char *z) noexcept { _zone = z; }
+		zone(const char* z) noexcept { _zone = z; }
 
 		std::string_view _backend = "dummy"sv;
-		std::optional<std::string_view> _zone{};
+		std::optional<std::string_view> _zone{ };
 		bool _ip_default{true};
 	};
 }
 
 namespace {
-	struct update_record {
-	private:
-		std::string_view _name;
+	struct resolver_map {
+		std::string_view name;
+
+		d3::polymorph<d3::updater>
+		(*builder)(const std::optional<std::string_view>&);
+	};
+
+	constexpr auto updater_mapping = std::array{
+		resolver_map{"dummy"sv, d3::dummy_updater::build},
+		resolver_map{"cloudflare"sv, d3::cloudflare_updater::build}
 	};
 }
 
 std::optional<int>
-d3_main(int &argc, char **&argv) noexcept try {
+d3_main(int& argc, char**& argv) noexcept try {
 	const auto cfg = d3::config_bundle::build<d3::resolve::config_bundle>(
 		argc, argv, "resolve current public IP address");
 	if (const int early = cfg.do_shortcircuit()) return early;
 	if (argc != 0) return xerrx(2, "{} does not take arguments: {} passed", cfg.progname(), argc);
+
+	const auto updater_it = std::ranges::find_if(updater_mapping,
+																[&cfg](const auto& mapping) {
+																	return cfg.backend() == mapping.name;
+																});
+	if (updater_it == updater_mapping.cend()) return xerrx(2, "invalid resolver backend: {}", cfg.backend());
+
+	auto dns = updater_it->builder(cfg.zone());
 
 	constexpr auto domain_max = std::max(HOST_NAME_MAX, 255);
 	char input_fmt[256];
@@ -96,33 +116,35 @@ d3_main(int &argc, char **&argv) noexcept try {
 							domain_max);
 
 	for (;;) {
-		char hostname_buf[domain_max + 1]{}; // DNS record name
-		char record_type_buf[16 + 1]{}; // DNS record type
-		char data_buf[65536 + 1]{}; // value
+		char hostname_buf[domain_max + 1]{ }; // DNS record name
+		char record_type_buf[16 + 1]{ }; // DNS record type
+		char data_buf[65536 + 1]{ }; // value
 
-		int ws_sz1{}, ws_sz2{};
-		int hostname_sz{}, record_type_sz{}, data_sz{};
+		int ws_sz1{ }, ws_sz2{ };
+		int hostname_sz{ }, record_type_sz{ }, data_sz{ };
 		if (const auto res = std::scanf(input_fmt,
-														hostname_buf, &hostname_sz,
-														&ws_sz1, record_type_buf, &record_type_sz,
-														&ws_sz2, data_buf, &data_sz);
+													hostname_buf, &hostname_sz,
+													&ws_sz1, record_type_buf, &record_type_sz,
+													&ws_sz2, data_buf, &data_sz);
 			res != 3) {
 			if (res == EOF) break;
 			return xerrx(1, "invalid line: domain line could not be parsed");
 		}
-		if (const auto next = getchar(); !(next == '\n' || next == EOF))
+		// XXX properly report which segment was too large
+		if (const auto next = getchar(); !(next == '\n' || next == EOF)) //
 			return xerrx(1, "invalid line: line or segment too long");
 
 		const std::string_view hostname(hostname_buf, hostname_sz);
 		const std::string_view record_type(record_type_buf, record_type_sz - ws_sz1);
 		const std::string_view data(data_buf, data_sz - ws_sz2);
 
-		// todo dns.update(hostname, record_type, data);
+		if (const auto result = dns->update({hostname, record_type, data}))
+			return result;
 	}
 
 	return cfg.finalize();
 }
-catch (const std::exception &ex) {
+catch (const std::exception& ex) {
 	return xerrx(1, "{}", ex.what());
 }
 catch (...) {

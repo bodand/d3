@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,34 +20,47 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef D3_IPIFY_COM_RESOLVER_HXX
-#define D3_IPIFY_COM_RESOLVER_HXX
+#ifndef D3_UPDATER_HXX
+#define D3_UPDATER_HXX
 
-#include <bit>
-#include <cassert>
-#include <span>
-
-#include <resolvers/resolver.hxx>
-#include <util/polymorph.hxx>
+#include <optional>
+#include <string_view>
 
 namespace d3 {
-	struct ipify_com_resolver final : resolver {
-		static polymorph<resolver>
-		build(bool ipv4, bool ipv6) {
-			return d3::make_polymorph<resolver, ipify_com_resolver>(ipv4, ipv6);
+	struct record {
+		std::string_view name;
+		std::string_view type;
+		std::string_view value;
+	};
+
+	struct updater {
+		explicit
+		updater(const std::optional<std::string_view>& zone)
+			: _zone(zone) { }
+
+		virtual ~updater() = default;
+
+		int
+		update(const record& rec) {
+			const auto zone = _zone
+										? *_zone
+										: zone_of(rec.name);
+			return do_update_dns(zone, rec);
 		}
 
-		void
-		resolve_into(int output) override;
+	protected:
+		[[nodiscard]] std::optional<std::string_view>
+		zone() const { return _zone; }
 
-		~ipify_com_resolver() noexcept override;
-
-		ipify_com_resolver(bool ipv4, bool ipv6);
+		virtual int
+		do_update_dns(std::string_view zone, const record& rec) = 0;
 
 	private:
-		void* _impl_ctx;
-   };
+		static std::string_view
+		zone_of(std::string_view domain);
+
+		std::optional<std::string_view> _zone;
+	};
 }
 
 #endif
-

@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,34 +20,15 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef D3_IPIFY_COM_RESOLVER_HXX
-#define D3_IPIFY_COM_RESOLVER_HXX
+#include <updaters/dummy_updater.hxx>
+#include <print>
 
-#include <bit>
-#include <cassert>
-#include <span>
-
-#include <resolvers/resolver.hxx>
-#include <util/polymorph.hxx>
-
-namespace d3 {
-	struct ipify_com_resolver final : resolver {
-		static polymorph<resolver>
-		build(bool ipv4, bool ipv6) {
-			return d3::make_polymorph<resolver, ipify_com_resolver>(ipv4, ipv6);
-		}
-
-		void
-		resolve_into(int output) override;
-
-		~ipify_com_resolver() noexcept override;
-
-		ipify_com_resolver(bool ipv4, bool ipv6);
-
-	private:
-		void* _impl_ctx;
-   };
+int
+d3::dummy_updater::do_update_dns(std::string_view zone, const record& rec) {
+	std::println("{} {} {} (zone {})",
+		rec.name,
+		rec.type,
+		rec.value,
+		zone);
+	return 0;
 }
-
-#endif
-

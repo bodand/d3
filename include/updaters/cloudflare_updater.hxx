@@ -4,7 +4,7 @@
 //
 // 1. Redistributions of source code must retain the above copyright notice, this
 //    list of conditions and the following disclaimer.
-// 
+//
 // 2. Redistributions in binary form must reproduce the above copyright notice,
 // 	this list of conditions and the following disclaimer in the documentation
 //    and/or other materials provided with the distribution.
@@ -20,34 +20,56 @@
 // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
 // USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#ifndef D3_IPIFY_COM_RESOLVER_HXX
-#define D3_IPIFY_COM_RESOLVER_HXX
+#ifndef D3_CLOUDFLARE_UPDATER_HXX
+#define D3_CLOUDFLARE_UPDATER_HXX
 
-#include <bit>
-#include <cassert>
-#include <span>
+#include <algorithm>
+#include <climits>
 
-#include <resolvers/resolver.hxx>
+#include <updaters/updater.hxx>
 #include <util/polymorph.hxx>
 
 namespace d3 {
-	struct ipify_com_resolver final : resolver {
-		static polymorph<resolver>
-		build(bool ipv4, bool ipv6) {
-			return d3::make_polymorph<resolver, ipify_com_resolver>(ipv4, ipv6);
+	struct cloudflare_updater final : updater {
+		static polymorph<updater>
+		build(const std::optional<std::string_view>& zone) {
+			return d3::make_polymorph<updater, cloudflare_updater>(zone);
 		}
 
-		void
-		resolve_into(int output) override;
+		explicit
+		cloudflare_updater(const std::optional<std::string_view>& zone);
 
-		~ipify_com_resolver() noexcept override;
+		~cloudflare_updater() override;
 
-		ipify_com_resolver(bool ipv4, bool ipv6);
+	protected:
+		int
+		do_update_dns(std::string_view zone, const record& rec) override;
 
 	private:
-		void* _impl_ctx;
-   };
+		void
+		cleanup();
+
+		std::string_view
+		load_zone_id(std::string_view zone);
+
+		std::string_view
+		load_record_id(std::span<char> id_buf, std::string_view zone_id, const record& rec);
+
+		bool
+		patch_record(std::string_view zone_id, std::string_view record_id, const record& rec);
+
+		// shared dynamic buffer for curl responses, reused between multiple
+		// calls to ease allocation pressure
+		std::string _curl_read_buffer{ };
+		// type erased curl handle
+		void* _curl;
+		void* _json_headers{ };
+		void* _empty_headers{ };
+
+		char _zone_id_buffer_for_buf[std::max(HOST_NAME_MAX, 255) + 1]{ };
+		std::string_view _zone_id_buffer_for{ };
+		char _zone_id_buf[sizeof("00000000000000000000000000000000") - 1]{ };
+	};
 }
 
 #endif
-

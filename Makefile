@@ -78,7 +78,10 @@ FILTER_OBJ = ${FILTER_SRC:.cxx=.o}
 src/d3-filter: ${FILTER_OBJ}
 	${CXX} -o $@ ${FILTER_OBJ} ${EFFECTIVE_LINK_FLAGS}
 
-UPDATE_SRC = ${COMMON_SRC} src/d3-update.cxx
+UPDATE_SRC = ${COMMON_SRC} src/d3-update.cxx \
+				src/updaters/updater.cxx \
+				src/updaters/dummy_updater.cxx \
+				src/updaters/cloudflare_updater.cxx
 UPDATE_OBJ = ${UPDATE_SRC:.cxx=.o}
 src/d3-update: ${UPDATE_OBJ}
 	${CXX} -o $@ ${UPDATE_OBJ} ${EFFECTIVE_LINK_FLAGS}
